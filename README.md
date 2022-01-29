@@ -10,7 +10,7 @@ Currently it only supports the `#` syntax for markdown headers, and it should su
 
 ## Usage
 
- You can create a table of contents using `require('loclist-toc-nvim').make_markdown_toc()`. Here's an example how to bind that to a shortcut for all markdown files.
+You can create a table of contents for the current buffer by calling `require('loclist-toc-nvim').make_markdown_toc()`. Here's an example how to bind that to a shortcut for all markdown files.
 
 ```lua
 vim.cmd [[autocmd FileType markdown nnoremap <buffer> <silent> <leader>tt :lua require('loclist-toc-nvim').make_markdown_toc()<cr>]]
@@ -24,14 +24,21 @@ That function will take a table/list of entries, each with the following informa
 
 ```
 {
-	text, -- The content of the heading not including the beginning '#' chars
-	line_number, -- Line number the heading was found on
-	depth, -- a table/list containing where the heading was found in relation to previous headings, will be explained below in greater depth
-	level, -- Which level of heading the markdown heading is (1-6)
+	-- The content of the heading not including the beginning '#' chars
+	text,
+
+	-- Line number the heading was found on
+	line_number,
+
+	-- a table/list containing where the heading was found in relation to previous headings, will be explained below in greater depth
+	depth,
+
+	-- Which level of heading the markdown heading is (1-6)
+	level,
 }
 ```
 
-The `depth` key is hard to explain so I'll give an example that will hopefully make it clear, but try to think of them as "section" indicators much like a table of contents might normally have.
+The `depth` key is hard to explain so I'll give an example that will hopefully make it clear, but try to think of it as a collection of "section" indicators much like a table of contents might normally have.
 
 ```markdown
 # depth = { 1 }
