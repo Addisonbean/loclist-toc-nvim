@@ -1,7 +1,14 @@
 local toc = require('loclist-toc-nvim.toc')
+local config = require('loclist-toc-nvim.config')
 
-local loclist_toc_nvim = {}
+local M = {}
 
-loclist_toc_nvim.make_markdown_toc = toc.make_loclist_toc
+M.setup = function(options)
+	if options.format_entries ~= nil then
+		config.format_entries = options.format_entries
+	end
+end
 
-return loclist_toc_nvim
+M.make_markdown_toc = toc.make_loclist_toc
+
+return M

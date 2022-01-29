@@ -1,7 +1,12 @@
--- Next:
---   Alt headings
---   A way to do tests?
---   Alt ways to format the output
+local config = require('loclist-toc-nvim.config')
+
+local function shallowcopy(t)
+	local new_t = {}
+	for k,v in ipairs(t) do
+		new_t[k] = v
+	end
+	return new_t
+end
 
 local function get_heading_level(line)
 	return line:match('^#+'):len()
@@ -14,36 +19,26 @@ end
 local function format_loclist_entry(info)
 	local items = vim.fn.getloclist(0, { items = 0 }).items
 
-	local entries = {}
-	local max_len = 1
-	for idx = info.start_idx, info.end_idx do
-		local heading = {}
-		heading.level, heading.text = string.match(items[idx].text, '([%d.]+) (.+)')
-		max_len = math.max(max_len, #heading.level)
-		table.insert(entries, heading)
+	local lines = {}
+	for _, item in ipairs(items) do
+		table.insert(lines, item.text)
 	end
 
-	local formatted_entries = {}
-	for _, e in ipairs(entries) do
-		local s = e.level .. string.rep(' ', max_len - #e.level + 1) .. e.text
-		table.insert(formatted_entries, s)
-	end
-
-	return formatted_entries
+	return lines
 end
 
 local function make_loclist_toc()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
 
+	-- TODO: stop using `level` to mean both depth and which markdown heading
 	local loc_items = {}
 	local prev_level = 0
 	local levels = {}
+	local entries = {}
 	for line_number, line in ipairs(lines) do
 		local heading = get_heading(line)
 		if heading ~= nil then
 			local heading_level = get_heading_level(line)
-
-			-- TODO: do all formatting here then allow that to be customized by passing some other lua function instead...
 
 			if heading_level < prev_level then
 				local diff = prev_level - heading_level
@@ -58,26 +53,31 @@ local function make_loclist_toc()
 				levels[#levels] = levels[#levels] + 1
 			end
 
-			local displayed_heading = ''
-			for _, l in ipairs(levels) do
-				displayed_heading = displayed_heading .. tostring(l) .. '.'
-			end
-
-			-- Remove trailing '.' from `displayed_heading`
-			displayed_heading = displayed_heading:sub(1, -2) .. ' ' .. heading
-
-			table.insert(loc_items, {
-				bufnr = vim.fn.bufnr('%'),
-				lnum = line_number,
-				col = 1,
-				text = displayed_heading,
+			table.insert(entries, {
+				text = heading,
+				line_number = line_number,
+				depth = shallowcopy(levels),
+				level = heading_level,
 			})
 
 			prev_level = heading_level
 		end
 	end
 
-	vim.fn.setloclist(0, {}, ' ', { efm = '%f', items = loc_items, quickfixtextfunc = format_loclist_entry, title = 'Table of Contents' })
+	local bufnr = vim.fn.bufnr('%')
+
+	local formatted_entries = config.format_entries(entries)
+	local results = {}
+	for i, entry in ipairs(entries) do
+		table.insert(results, {
+			text = formatted_entries[i],
+			lnum = entry.line_number,
+			col = 1,
+			bufnr = bufnr,
+		})
+	end
+
+	vim.fn.setloclist(0, {}, ' ', { efm = '%f', items = results, quickfixtextfunc = format_loclist_entry, title = 'Table of Contents' })
 	vim.cmd('lopen')
 end
 
