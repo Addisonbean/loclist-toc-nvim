@@ -2,11 +2,11 @@
 
 Generates a table of contents in your location list for markdown files.
 
-Currently it only supports the `#` syntax for markdown headers.
+Currently it only supports the `#` syntax for markdown headers, and it should support any format that has markdown-style headings.
 
 ## Setup
 
-`require('loclist-toc-nvim').setup{}
+`require('loclist-toc-nvim').setup{}`
 
 ## Usage
 
@@ -18,7 +18,7 @@ vim.cmd [[autocmd FileType markdown nnoremap <buffer> <silent> <leader>tt :lua r
 
 ## Customizing
 
-You can control how the heading are displayed by passing a custom function to the `format_entries` key in `setup`. See the default implementation in [lua/loclist-toc-nvim/toc.lua](...) for an example.
+You can control how headings are displayed in the location list by passing a custom function to the `format_entries` key in `setup`.
 
 That function will take a table/list of entries, each with the following information (they will be sorted by occurrence in the file):
 
@@ -58,6 +58,8 @@ require('loclist-toc-nvim').setup{
   end,
 }
 ```
+
+See the default implementation in [lua/loclist-toc-nvim/config.lua](https://github.com/Addisonbean/loclist-toc-nvim/blob/master/lua/loclist-toc-nvim/config.lua#L2) for another example.
 
 ## Todo
 
